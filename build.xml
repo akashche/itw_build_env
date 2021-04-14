@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="icedtea-web" default="all">
+  <property name="compiler.debug" value="on"/>
+  <property name="compiler.generate.no.warnings" value="off"/>
+  <patternset id="library.patterns">
+    <include name="*.war"/>
+    <include name="*.swc"/>
+    <include name="*.apk"/>
+    <include name="*.zip"/>
+    <include name="*.egg"/>
+    <include name="*.ear"/>
+    <include name="*.ane"/>
+    <include name="*.jar"/>
+    <include name="*.klib"/>
+  </patternset>
+  <patternset id="compiler.resources">
+    <exclude name="**/?*.java"/>
+    <exclude name="**/?*.form"/>
+    <exclude name="**/?*.class"/>
+    <exclude name="**/?*.groovy"/>
+    <exclude name="**/?*.scala"/>
+    <exclude name="**/?*.flex"/>
+    <exclude name="**/?*.kt"/>
+    <exclude name="**/?*.clj"/>
+    <exclude name="**/?*.aj"/>
+  </patternset>
+
+  <path id="library.js.classpath">
+    <pathelement location="${basedir}/libs/js.jar"/>
+    <pathelement location="${basedir}/libs/mslinks.jar"/>
+    <pathelement location="${basedir}/libs/tagsoup.jar"/>
+  </path>
+   
+  <property name="module.icedtea-web.basedir" value="${basedir}/lookaside_icedtea-web"/>
+  <property name="compiler.args.icedtea-web" value="-encoding UTF-8 -source 8 -target 8"/>
+  
+  <property name="icedtea-web.output.dir" value="${basedir}/build/production/icedtea-web"/>
+  <property name="icedtea-web.testoutput.dir" value="${basedir}/build/test/icedtea-web"/>
+  
+  <path id="icedtea-web.module.production.classpath">
+    <path refid="library.js.classpath"/>
+  </path>
+  
+  <path id="icedtea-web.runtime.production.module.classpath">
+    <pathelement location="${icedtea-web.output.dir}"/>
+    <path refid="library.js.classpath"/>
+  </path>
+  
+  <path id="icedtea-web.module.classpath">
+    <pathelement location="${icedtea-web.output.dir}"/>
+    <path refid="library.js.classpath"/>
+  </path>
+  
+  <path id="icedtea-web.runtime.module.classpath">
+    <pathelement location="${icedtea-web.testoutput.dir}"/>
+    <pathelement location="${icedtea-web.output.dir}"/>
+    <path refid="library.js.classpath"/>
+  </path>
+  
+  <target name="compile.module.icedtea-web" depends="compile.module.icedtea-web.production,compile.module.icedtea-web.tests" description="Compile module icedtea-web"/>
+  
+  <target name="compile.module.icedtea-web.production" description="Compile module icedtea-web; production classes">
+    <mkdir dir="${icedtea-web.output.dir}"/>
+    <javac srcdir="${module.icedtea-web.basedir}/netx" destdir="${icedtea-web.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" fork="true" includeantruntime="false">
+      <compilerarg line="${compiler.args.icedtea-web}"/>
+      <classpath refid="icedtea-web.module.production.classpath"/>
+    </javac>
+    <javac srcdir="${module.icedtea-web.basedir}/plugin/icedteanp/java" destdir="${icedtea-web.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" fork="true" includeantruntime="false">
+      <compilerarg line="${compiler.args.icedtea-web}"/>
+      <classpath refid="icedtea-web.module.production.classpath"/>
+    </javac>
+    
+    <copy todir="${icedtea-web.output.dir}">
+      <fileset dir="${module.icedtea-web.basedir}/netx">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="${module.icedtea-web.basedir}/plugin/icedteanp/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.icedtea-web.tests" depends="compile.module.icedtea-web.production" description="compile module icedtea-web; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.icedtea-web" description="cleanup module">
+    <delete dir="${icedtea-web.output.dir}"/>
+    <delete dir="${icedtea-web.testoutput.dir}"/>
+  </target>
+  
+  <target name="init" description="Build initialization">
+    <!-- Perform any build initialization in this target -->
+  </target>
+  
+  <target name="clean" depends="clean.module.icedtea-web" description="cleanup all"/>
+  
+  <target name="build.modules" depends="init, clean, compile.module.icedtea-web" description="build all modules"/>
+  
+  <target name="init.artifacts">
+    <property name="artifacts.temp.dir" value="${basedir}/__artifacts_temp"/>
+    <property name="artifact.output.javaws:jar" value="${basedir}"/>
+    <mkdir dir="${artifacts.temp.dir}"/>
+    <property name="temp.jar.path.javaws.jar" value="${artifacts.temp.dir}/javaws.jar"/>
+  </target>
+  
+  <target name="artifact.javaws:jar" depends="init.artifacts, compile.module.icedtea-web" description="Build &#39;javaws:jar&#39; artifact">
+    <property name="artifact.temp.output.javaws:jar" value="${artifacts.temp.dir}/javaws_jar"/>
+    <mkdir dir="${artifact.temp.output.javaws:jar}"/>
+    <jar destfile="${temp.jar.path.javaws.jar}" duplicate="preserve" filesetmanifest="mergewithoutmain">
+      <zipfileset dir="${icedtea-web.output.dir}"/>
+      <zipfileset src="${basedir}/libs/js.jar"/>
+      <zipfileset src="${basedir}/libs/mslinks.jar"/>
+      <zipfileset src="${basedir}/libs/tagsoup.jar"/>
+    </jar>
+    <copy file="${temp.jar.path.javaws.jar}" tofile="${artifact.temp.output.javaws:jar}/javaws.jar"/>
+  </target>
+  
+  <target name="build.all.artifacts" depends="artifact.javaws:jar" description="Build all artifacts">
+    <mkdir dir="${artifact.output.javaws:jar}"/>
+    <copy todir="${artifact.output.javaws:jar}">
+      <fileset dir="${artifact.temp.output.javaws:jar}"/>
+    </copy>
+    
+    <!-- Delete temporary files -->
+    <delete dir="${artifacts.temp.dir}"/>
+  </target>
+  
+  <target name="all" depends="build.modules, build.all.artifacts" description="build all"/>
+</project>

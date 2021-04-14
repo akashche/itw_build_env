@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+">
+    <information>
+        <title>Hello Title</title>
+        <vendor>Hello Vendor</vendor>
+    </information>
+    <resources>
+        <jar href="hello_.jar" main="true" />
+    </resources>
+    <application-desc
+         name="Hello"
+         main-class=
+           "Hello"
+         width="300"
+         height="300">
+     </application-desc>
+</jnlp>                           
